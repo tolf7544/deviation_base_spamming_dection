@@ -13,13 +13,13 @@ import type { MinMax } from "./type"
 export function getMinMax(num_1: number, num_2: number): MinMax {
     if(num_1 > num_2) {
         return {
-            "min": num_1,
-            "max": num_2
+            "min": num_2,
+            "max": num_1
         }
     } else {
         return {
-            "min": num_2,
-            "max": num_1
+            "min": num_1,
+            "max": num_2
         }
     }
 }

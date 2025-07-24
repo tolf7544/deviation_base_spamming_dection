@@ -3,6 +3,10 @@ import type { IFQueue } from "./interface";
 export class Queue<T extends any> implements IFQueue<T> {
     private _queue!: Array<T>
 
+    constructor() {
+        this._queue = new Array<T>()
+    }
+
     get size(): number {
         return this._queue.length
     };
@@ -17,7 +21,7 @@ export class Queue<T extends any> implements IFQueue<T> {
     }
 
     display(): void {
-        let temp = String("[ ")
+        let temp = new String("[ ")
         for(let i = 0; i < this._queue.length; i++) {
             
             if(this._queue.length-1 == i) {
@@ -28,6 +32,12 @@ export class Queue<T extends any> implements IFQueue<T> {
         }
 
         console.log(temp)
+    }
+
+    clear(): Array<T> {
+        let temp = this._queue
+        this._queue = []
+        return temp
     }
 
     asArray(): T[] {

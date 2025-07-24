@@ -1,16 +1,8 @@
-import readline from 'node:readline';
+import { TestPromptProcesser } from "./TestPromptProcesser";
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
+function main() {
+const test = new TestPromptProcesser()
+test.setMainSection(1)
+}
 
-rl.question("press enter", _ => {
-    
-})
-
-
-rl.question(`What's your name?`, answer => {
-  console.log(`Hi ${answer}!`);
-  
-});
+main()

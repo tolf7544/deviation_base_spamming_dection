@@ -1,5 +1,5 @@
 export type MessageTimestampElement = {
-    timestamp: string; // ISO 8601 format
+    timestamp: string; // UTC ms format
     message: string;
 }
 

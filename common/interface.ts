@@ -7,15 +7,14 @@ export interface IFTestPromptProcesser {
     readline: Interface
 
 
-    setMainSection(): void
-    displaySection(title: string, description: string ): void
+    setMainSection(i: number): void
+    displaySection({ messageTimestamps, epsilon, timeoutLimit, delays, repetitionScores }: DeviationSpamAnalysisResult ): void
 }
 
 export interface IFDeviationBaseSpammmingDetector {
     epsilon: number,
-    timestamp: Date,
     timestampQueue: Queue<number>
-    timeoutLimit: number // milli-seocnd
+    timeoutLimit: number // milli-seocnd https://currentmillis.com/
 
     collectTimestamp(timestamp: number): void
     getRepetitionScoreArray(): DeviationSpamAnalysisResult
@@ -27,4 +26,5 @@ export interface IFQueue<T> {
     get(): T | undefined
     display(): void
     asArray(): Array<T>
+    clear(): Array<T>
 }
