@@ -1,30 +1,44 @@
 import readline from "readline";
-import type { IFTestPromptProcesser } from "./interface";
+import type { IFTestPromptProcesser } from "./common/interface";
+import type { MessageTimestampElement } from "./common/type";
 
 
-class TestPromptProcesser implements IFTestPromptProcesser {
-    collect_count: number = NaN;
+export class TestPromptProcesser implements IFTestPromptProcesser {
+    collectionSize: number = NaN;
     readline!: readline.Interface;
 
-    constructor(collect_count: number = 0) {
+    constructor(collectCount: number = 0) {
         this.readline = readline.createInterface({
           input: process.stdin,
           output: process.stdout,
         });
-        this.collect_count = collect_count
+        this.collectionSize = collectCount
     }
 
-    set_main_section(): void {
-        this.readline.question(`test spamming section`, answer => {
-            console.log(`Hi ${answer}!`);
+    setMainSection(): void {
+        this.readline.question(`[ test spamming section ]`, answer => {
+            const collect = new Array<MessageTimestampElement>()
+
+            if (this.collectionSize >= 3) {
+                
+            } else {
+                collect.push({
+                    timestamp: new Date().toISOString(),
+                    message: answer
+                })
+            }
         
         });
     }
-    set_analysis_section(): void {
+
+    getAnalysis(): void {
         throw new Error("Method not implemented.");
     }
-    wait_enter_input_section(): void {
-        throw new Error("Method not implemented.");
+
+    displaySection(title: string, description: string): void {
+        this.readline.question(`[ test spamming section ]`, answer => {
+
+        })
     }
 
 }
