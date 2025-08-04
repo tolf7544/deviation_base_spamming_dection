@@ -23,3 +23,19 @@ export function getMinMax(num_1: number, num_2: number): MinMax {
         }
     }
 }
+
+export function min(a: number, b: number) {
+    if(a > b) return b
+    else return a
+}
+
+export function max(a: number, b: number) {
+    if(a > b) return a
+    else return b
+}
+
+
+export function conditionalProbability(p_1: number, p_2: number) {
+    return (p_1 * p_2) / p_2
+    
+}

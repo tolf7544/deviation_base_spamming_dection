@@ -8,8 +8,17 @@ export type DeviationSpamAnalysisResult = {
     timeoutLimit: number
     messageTimestamps: Array<number>,
     delays: Array<number>,
-    repetitionScores: Array<number>,
+    score_1: Array<number>,
+    score_2: number
 }
+export type BidirectionalScoreResult = {
+    delays: Array<number>,
+    scores: Array<number>
+}
+
+export type ConditionalPScoreResult = BidirectionalScoreResult
+export type ConditionalPSpamAnalysisResult = DeviationSpamAnalysisResult
+
 
 export type MinMax = {
     "min": number,

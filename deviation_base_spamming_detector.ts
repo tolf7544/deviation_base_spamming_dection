@@ -1,9 +1,9 @@
-import type { IFDeviationBaseSpammmingDetector } from "./common/interface";
+import type { IFDeviationAnalysis } from "./common/interface";
 import { Queue } from "./common/queue";
-import type { DeviationSpamAnalysisResult } from "./common/type";
-import { getMinMax } from "./common/util";
+import type { BidirectionalScoreResult, DeviationSpamAnalysisResult } from "./common/type";
+import { conditionalProbability, getMinMax, max, min } from "./common/util";
 
-export class DeviationBaseSpammmingDetector implements IFDeviationBaseSpammmingDetector {
+export class DeviationBaseSpammmingDetector implements IFDeviationAnalysis {
     epsilon: number;
     timestampQueue: Queue<number>;
     timeoutLimit: number // milli-seocnd
@@ -23,44 +23,84 @@ export class DeviationBaseSpammmingDetector implements IFDeviationBaseSpammmingD
         }, this.timeoutLimit);
     }
 
+
     collectTimestamp(timestamp: number): void {
         this.timestampQueue.put(timestamp)
         this.settimeoutQueue(timestamp)
     }
 
-    getRepetitionScoreArray(): DeviationSpamAnalysisResult {
-        
-        const calculateTarget = this.timestampQueue.asArray() // return queue elements to array
-        const delayArray = this.getDelayArray()
-        const reptitionScoreArray: Array<number> = []
-
-        let avgScore: number = 0;
-        delayArray.forEach(value => avgScore += value)
-        avgScore = avgScore / delayArray.length
-
-        for (let i = 0; i < delayArray.length; i++) {
-            if (delayArray.length - 1 == i) {
+    getBidirectionalScore(): BidirectionalScoreResult {
+        const delays = this.getDelays()
+        const scores = Array<number>();
+        for (let i = 0; i < delays.length; i++) {
+            if(delays.length-1 == i) {
                 break
             }
+            let _min = min(delays[i], delays[i+1])
+            let _max = max(delays[i], delays[i+1])
+            scores.push(_min/_max)
+        }
 
-            const { min, max } = getMinMax(delayArray[i], delayArray[i + 1])
-            let _score = 1 - (max - min) / (avgScore + this.epsilon)
+        return {
+            delays: delays,
+            scores: scores
+        }
+    }
+
+    getAnalysisResult(): DeviationSpamAnalysisResult {
+        
+        const calculateTarget = this.timestampQueue.asArray() // return queue elements to array
+        const {delays, scores} = this.getBidirectionalScore()
+        const reptitionScoreArray: Array<number> = []
+        let totalScore:number = 1;
+        let CPScore: number = 1;
+
+        for (let i = 0; i < scores.length; i++) {
+            if(i+1 == scores.length) {
+                break
+            }
+            CPScore = conditionalProbability(scores[i+1], scores[i])
+        }
+
+        console.log("-", CPScore)
+
+        for (let i = 0; i < delays.length; i++) {
+            if (delays.length - 1 == i) {
+                break
+            }
+                
+            const { min, max } = getMinMax(delays[i], delays[i + 1])
+            const deviation = max - min
+            const avg = CPScore + this.epsilon
+            let _score = 0
+            console.log("-", deviation)
+            console.log("-", avg)
+            if(deviation > avg) {
+                _score = 0
+            } else {
+                _score = deviation / avg
+            }
+            console.log("-", _score)
+            totalScore *= _score
+            
             reptitionScoreArray.push(_score)
+            
         }
         this.timestampQueue.clear()
         return {
             epsilon: this.epsilon,
             timeoutLimit: this.timeoutLimit,
             messageTimestamps: calculateTarget,
-            delays: delayArray,
-            repetitionScores: reptitionScoreArray
+            delays: delays,
+            score_1: reptitionScoreArray,
+            score_2: 1 - totalScore
         }
     }
 
 
-    getDelayArray(): Array<number> {
+    getDelays(): Array<number> {
         const timestamps: Array<number> = this.timestampQueue.asArray()
-        const delayArray: Array<number> = []
+        const delays: Array<number> = []
 
         if (timestamps.length < 2) {
             throw `getDelayArray function is called when timestamps.length < 2`
@@ -71,10 +111,11 @@ export class DeviationBaseSpammmingDetector implements IFDeviationBaseSpammmingD
                 break
             }
             const { min, max } = getMinMax(timestamps[i], timestamps[i + 1])
-            delayArray.push(max - min)
+            delays.push(max - min)
         }
 
-        return delayArray
+        return delays
     }
 
 }
+

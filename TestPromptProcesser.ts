@@ -31,7 +31,7 @@ export class TestPromptProcesser implements IFTestPromptProcesser {
         });
     }
 
-    displaySection({ messageTimestamps, delays, repetitionScores, epsilon, timeoutLimit }: DeviationSpamAnalysisResult): void {
+    displaySection({ messageTimestamps, delays, score_1: repetitionScores, epsilon, timeoutLimit }: DeviationSpamAnalysisResult): void {
         let totla_score = 1
         let question = `[ analysis result ]\n`
         question += `1. message timestamp\n`
