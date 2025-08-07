@@ -2,17 +2,17 @@ from typing import Any
 
 import numpy as np
 
-from python.metadata import USE_DTYPE
 
 
-def delay_score(message_timestamp: np.ndarray[(Any,), USE_DTYPE]):
+def delay_score(message_timestamp: np.ndarray, dtype: np.dtype):
 
     delay_count = message_timestamp.__len__() - 1
     score_count = delay_count - 1
-    delays = np.empty(delay_count, dtype=USE_DTYPE)
-    scores = np.empty(score_count, dtype=USE_DTYPE)
+    delays = np.empty(delay_count, dtype=dtype)
+    scores = np.empty(score_count, dtype=dtype)
 
     for i in range(delay_count):
+
         delays[i] = message_timestamp[i + 1] - message_timestamp[i]
 
         if i != 0 and (i+1) % 2 == 0:
