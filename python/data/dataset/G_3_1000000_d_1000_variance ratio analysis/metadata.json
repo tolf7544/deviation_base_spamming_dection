@@ -1,0 +1,1 @@
+{"metadata": {"seed": 1234, "group_size": 3, "group_count": 1000000, "max_deviation": 1000, "dtype": "float64", "name": "G_3_1000000_d_1000_variance ratio analysis", "description": "분산_기반_스팸_탐지_정의 v3", "base_path": "./data/dataset", "tz": "Asia/Seoul", "save_time": "2025-08-25 02:34:39.466722+09:00"}}
