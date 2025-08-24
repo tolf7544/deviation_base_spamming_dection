@@ -1,1 +1,0 @@
-{"metadata": {"time_zone": "Asia/Seoul", "time_now": "2025-08-08 01:48:42.788731+09:00", "group_count": 1000000, "group_size": 3, "data_type": "float64", "score_location": "last element", "description": "score 범위 하위 25%, 상위 25% 집단만 분석"}}

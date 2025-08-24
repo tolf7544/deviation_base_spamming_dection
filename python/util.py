@@ -20,6 +20,12 @@ def load_numpy_array(file_path): # https://stackoverflow.com/questions/26646362/
 
     return a_new
 
+def absolute_subtract(x, y):
+    if x > y:
+        return x - y
+    else:
+        return y - x
+
 
 
 def partition(_array, is_array_element, comparing_index, low, high):

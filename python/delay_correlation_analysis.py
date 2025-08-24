@@ -3,6 +3,7 @@ import json
 import os
 from datetime import datetime
 from math import floor
+from typing import Union, AnyStr
 
 import numpy
 import numpy as np
@@ -18,7 +19,13 @@ from scipy.stats import t
 
 
 class DelayCorrelationAnalysis(DatasetMetadata):
-    def __init__(self, group_size: int = 3, group_count= 10,max_deviation: int = 1000, name: str = "analysis"):
+    def __init__(self,path: Union[os.PathLike[str], str] = None):
+        if path != None and os.path.exists(path):
+            with open(path, mode="r", encoding="utf-8") as f:
+                string = f.read()
+                metadata = json.loads(string)["metadata"]
+                super().__init__(**metadata)
+    def set_metadata(self, group_size: int = 3, group_count= 10,max_deviation: int = 1000, name: str = "analysis"):
         super().__init__(
             group_size=group_size,
             group_count=group_count,
@@ -28,6 +35,7 @@ class DelayCorrelationAnalysis(DatasetMetadata):
             base_path="./data/dataset",
             description="score 범위 하위 25%, 상위 25% 집단만 분석"
         )
+
 
     def generate_sample(self):
         timestamps = generate_timestamp(seed=self.seed, size=self.group_size * self.group_count, start_ms=1000,
@@ -50,15 +58,7 @@ class DelayCorrelationAnalysis(DatasetMetadata):
 
         metadata = json.dumps(
             {
-                "metadata": {
-                    "time_zone": self.seoul_tz.__str__(),
-                    "time_now": self.seoul_time.__str__(),
-                    "group_count": self.group_count,
-                    "group_size": self.group_size,
-                    "data_type": self.dtype.__name__.__str__(),
-                    "score_location": "last element",
-                    "description": self.description
-                }
+                "metadata": self()
             },
             ensure_ascii=False
         )
@@ -117,24 +117,25 @@ class DelayCorrelationAnalysis(DatasetMetadata):
         sample[:, 2] *= 100
         sample = sample.astype(np.int_)
 
-        sample_upper_25 = []
-        sample_lower_25 = []
-        for i in range(sample.__len__()):
-            if sample[i][2] >= 75:
-                sample_upper_25.append(sample[i])
-            if sample[i][2] <= 25:
-                sample_lower_25.append(sample[i])
+        # sample_upper_25 = []
+        # sample_lower_25 = []
+        # for i in range(sample.__len__()):
+        #     if sample[i][2] >= 75:
+        #         sample_upper_25.append(sample[i])
+        #     if sample[i][2] <= 25:
+        #         sample_lower_25.append(sample[i])
+        #
+        # sample_upper_25 = np.array(sample_upper_25)
+        # sample_lower_25 = np.array(sample_lower_25)
+        #
+        # upper_25 = self.pearson_correlation_analysis(sample_upper_25)
+        # lower_25 = self.pearson_correlation_analysis(sample_lower_25)
 
-        sample_upper_25 = np.array(sample_upper_25)
-        sample_lower_25 = np.array(sample_lower_25)
-
-        upper_25 = self.corr_analysis(sample_upper_25)
-        lower_25 = self.corr_analysis(sample_lower_25)
-        total = self.corr_analysis(sample)
+        total = self.pearson_correlation_analysis(sample)
         print("total corr {} p-value {}".format(*total))
         save_json_file(self.dataset_folder_path, "result", "{"+f"\"corr\": {total[0]}, \"p-value\": {total[1]}"+"}")
 
-    def corr_analysis(self, sample):
+    def pearson_correlation_analysis(self, sample):
         x = sample[:, 0]  # 첫번째 딜레이
         y = sample[:, 1]  # 두번째 딜레이
 
@@ -158,3 +159,20 @@ class DelayCorrelationAnalysis(DatasetMetadata):
         p_value = numpy.float64(t.sf(np.abs(t_score), df) * 2)
 
         return (corr, p_value)
+
+    def show_spread(self):
+        sample = self.load_save_dataset()
+        sample[:, 2] *= 100
+        x = sample[:,0]
+        y = sample[:,1]
+        sample_upper_25 = []
+        sample_lower_25 = []
+
+
+
+        plt.scatter(x, y, color='skyblue', alpha=0.7, s=0.5)
+        plt.title('산포도')
+        plt.xlabel('delay i')
+        plt.ylabel('delay i+1')
+        plt.grid(True)
+        plt.show()
