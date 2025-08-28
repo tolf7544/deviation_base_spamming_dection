@@ -3,6 +3,7 @@ import json
 import os
 from datetime import datetime
 from math import floor
+from random import sample
 from typing import Union, AnyStr
 
 import numpy
@@ -15,7 +16,7 @@ from python.metadata import DatasetMetadata
 from python.model.spam import delay_score, mean_variance_ratio
 from python.util import save_json_file, load_numpy_array, quicksort
 import matplotlib.pyplot as plt
-from scipy.stats import t
+from scipy.stats import t, shapiro, boxcox, stats
 
 
 class VarianceRatioAnalysis(DatasetMetadata):
@@ -77,21 +78,33 @@ class VarianceRatioAnalysis(DatasetMetadata):
                   sort_keys=True,
                   indent=4)
 
-    def load_save_dataset(self):
+    def load_save_dataset(self)-> np.ndarray:
         return load_numpy_array(f"{self.dataset_folder_path}/dataset.json")
 
-    def show_total_sample(self):
+    def transformed_data(self, interval:float = 1):
         sample = self.load_save_dataset()
-        normalized_sample = self.min_max_normalization(sample)
-        interval = 1
-        y = np.zeros((101,), dtype=np.int64)
-        x = np.arange(0, 101, 1)
-        for i in range(sample.__len__()):
-            j = int(normalized_sample[i]*100)
-            y[j] += 1
+        sample = self.min_max_normalization(sample)
+        sample = (sample * 100) // interval
+        return sample, interval
 
-        plt.bar(x, y, width=1)
-        plt.show()
+
+    def find_best_lmbda(self):
+        result = [0,0]
+        lmbda = 0
+
+        for i in range(1, 300):
+            _lmbda = -1 + 0.01 * i
+            sample, interval = self.transformed_data()
+            sample = boxcox(sample, lmbda=_lmbda)
+
+            sample = self.min_max_normalization(sample)
+            _result = shapiro(sample)
+
+            if result[1] < _result[1]:
+                result = _result
+                lmbda = _lmbda
+
+        return result, lmbda
 
     def min_max_normalization(self, x) -> np.ndarray:
         x_max = np.max(x)
@@ -109,54 +122,30 @@ class VarianceRatioAnalysis(DatasetMetadata):
 
         return scalar / (x.__len__() - 1)  # 자유도 적용
 
-    def analysis(self):
+    def show_total_sample(self):
         sample = self.load_save_dataset()
+        sample = self.min_max_normalization(sample)
 
-        sample[:, 2] *= 100
-        sample = sample.astype(np.int_)
+        shape = 100 + 1
+        y = np.zeros((shape,), dtype=np.int64)
+        x = np.arange(0, shape, 1)
+        for i in range(sample.__len__()):
+            j = int(sample[i]*100)
+            y[j] += 1
+        plt.bar(x, y, width=1)
+        plt.show()
 
-        # sample_upper_25 = []
-        # sample_lower_25 = []
-        # for i in range(sample.__len__()):
-        #     if sample[i][2] >= 75:
-        #         sample_upper_25.append(sample[i])
-        #     if sample[i][2] <= 25:
-        #         sample_lower_25.append(sample[i])
-        #
-        # sample_upper_25 = np.array(sample_upper_25)
-        # sample_lower_25 = np.array(sample_lower_25)
-        #
-        # upper_25 = self.pearson_correlation_analysis(sample_upper_25)
-        # lower_25 = self.pearson_correlation_analysis(sample_lower_25)
 
-        total = self.pearson_correlation_analysis(sample)
-        print("total corr {} p-value {}".format(*total))
-        save_json_file(self.dataset_folder_path, "result", "{"+f"\"corr\": {total[0]}, \"p-value\": {total[1]}"+"}")
-
-    def pearson_correlation_analysis(self, sample):
-        x = sample[:, 0]  # 첫번째 딜레이
-        y = sample[:, 1]  # 두번째 딜레이
-
-        # # min-max 정규화
-        # x_norm = self.min_max_normalization(x)
-        # y_norm = self.min_max_normalization(y)
-
-        # 공분산
-        cov = self.cov(x, y)  # np.cov(x_norm, y_norm)[0,1]
-
-        # 표준 편차
-        x_sd = np.std(x, ddof=1)  # np.sqrt( np.sum((x_norm - x_norm.mean())**2)/x_norm.__len__() )
-        y_sd = np.std(y, ddof=1)  # np.sqrt( np.sum((y_norm - y_norm.mean())**2)/y_norm.__len__() )
-
-        # 피어슨 상관계수
-        corr = cov / (x_sd * y_sd)
-
-        # t-score
-        t_score = corr * np.sqrt(sample.__len__() - 2) / np.sqrt(1 - corr ** 2)
-        df = sample.__len__() - 1
-        p_value = numpy.float64(t.sf(np.abs(t_score), df) * 2)
-
-        return (corr, p_value)
+    def show_sample(self, sample, interval):
+        # normalized_sample = self.min_max_normalization(sample)
+        shape = 100 // interval + 1
+        y = np.zeros((shape,), dtype=np.int64)
+        x = np.arange(0, shape, 1)
+        for i in range(sample.__len__()):
+            j = int(sample[i])
+            y[j] += 1
+        plt.bar(x, y, width=1)
+        plt.show()
 
     def show_spread(self):
         sample = self.load_save_dataset()
