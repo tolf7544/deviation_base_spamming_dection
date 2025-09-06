@@ -10,6 +10,7 @@ from python.delay_correlation_analysis import DelayCorrelationAnalysis
 from python.metadata import DatasetMetadata
 from python.util import load_numpy_array, quicksort
 from python.variance_ratio_analysis import VarianceRatioAnalysis
+from python.variance_ratio_analysis_v2 import SpamDetectorVarianceRatio
 
 #d
 #
@@ -20,35 +21,22 @@ from python.variance_ratio_analysis import VarianceRatioAnalysis
 # d
 
 if __name__ == '__main__':
-    a = np.arange(1,101, 1)
-    a_mean = a.mean()
-    a_se = np.sqrt(((a - a_mean)**2).sum() / (a.__len__()-1))
-    print(a_se)
-    print(a_mean)
-    # np.set_printoptions(suppress=True)
-    # group_size: int = 3
-    # group_count = 100000
-    #
-    # max_deviation: int = 1000
-    # name: str = "variance ratio analysis"
-    # # vra = VarianceRatioAnalysis()
-    # # vra.set_metadata(group_size, group_count, max_deviation, name)
-    # # vra.generate_sample()
-    # # vra.find_best_lmbda()
-    #
-    #
-    # vra = VarianceRatioAnalysis()
-    # vra.set_metadata(group_size, group_count, max_deviation, name)
-    # vra.generate_sample()
-    # vra.show_total_sample()
-    #
+    np.set_printoptions(suppress=True)
+    group_size: int = 3
+    group_count = 100
+    max_deviation: int = 1000
+    name: str = "spam detect by using variance ratio"
+
+    vra = SpamDetectorVarianceRatio("data/dataset/G_3_100_d_1000_spam detect by using variance ratio/metadata.json")
+    vra.set_metadata(group_size, group_count, max_deviation, name)
+    vra.analysis()
+
     # for i in range(8):
     #     group_count = 30 + 10*(i)
-    #     vra = VarianceRatioAnalysis()
+    #     vra = SpamDetectorVarianceRatio()
     #     vra.set_metadata(group_size, group_count, max_deviation, name)
     #     vra.generate_sample()
-    #     result = vra.find_best_lmbda()
-    #     print(result)
+    #     vra.analysis()
 
 
 

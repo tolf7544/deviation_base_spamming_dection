@@ -21,7 +21,8 @@ class DatasetMetadata:
         self.name = name
         self.base_path = base_path
         self.description = description
-        self.__set_data_folder_path()
+        is_load = description != None
+        self.__set_data_folder_path(is_load=is_load)
         self.__set_dtype_metadata(dtype)
 
         self.__set_time_metadata(tz, saved_time)
@@ -43,12 +44,12 @@ class DatasetMetadata:
         else:
             self.seoul_time = datetime.now(self.seoul_tz).__str__()
 
-    def __set_data_folder_path(self):
+    def __set_data_folder_path(self, is_load: bool = False):
         default_dataset_folder_path = "{}/{}".format(self.base_path, self.name)
         save_folder_count = [path.find(default_dataset_folder_path) != -1 for path in
                              os.listdir(self.base_path)].__len__()
 
-        if os.path.exists(default_dataset_folder_path):
+        if os.path.exists(default_dataset_folder_path) and is_load == False:
             self.dataset_folder_path = "{}_{}".format(default_dataset_folder_path, save_folder_count)
         else:
             self.dataset_folder_path = default_dataset_folder_path
@@ -64,5 +65,5 @@ class DatasetMetadata:
             "description": self.description,
             "base_path": self.base_path,
             "tz": self.seoul_tz.__str__(),
-            "save_time": self.seoul_time
+            "saved_time": self.seoul_time
         }

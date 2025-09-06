@@ -26,7 +26,11 @@ def absolute_subtract(x, y):
     else:
         return y - x
 
+def standardization(sample: np.ndarray):
+    _mean = sample.mean()
+    _sd = np.sqrt(((sample - _mean)**2).sum() / sample.__len__())
 
+    return (sample - _mean) / _sd
 
 def partition(_array, is_array_element, comparing_index, low, high):
     if is_array_element == True:
